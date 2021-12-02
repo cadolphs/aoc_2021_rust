@@ -11,9 +11,16 @@ pub fn run_day_02() {
     let final_pos = apply_bunch_of_commands(start_pos, &commands);
     println!("Final position is {:?}", final_pos);
     println!("The checksum is {}", final_pos.h * final_pos.d);
+    let start_pos_with_aim = PosAim::new();
+    let final_pos_with_aim = apply_bunch_of_commands(start_pos_with_aim, &commands);
+    println!("Final position is {:?}", final_pos_with_aim);
+    println!(
+        "The checksum is {}",
+        final_pos_with_aim.h * final_pos_with_aim.d
+    );
 }
 
-fn apply_bunch_of_commands(start_pos: Pos, commands: &[Command]) -> Pos {
+fn apply_bunch_of_commands<T: Add<Command, Output = T>>(start_pos: T, commands: &[Command]) -> T {
     commands.iter().fold(start_pos, |pos, cmd| pos + *cmd)
 }
 
@@ -38,6 +45,41 @@ impl Add<Command> for Pos {
             },
             Command::Up(amt) => Self {
                 d: self.d - amt,
+                ..self
+            },
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+struct PosAim {
+    h: u32,
+    d: u32,
+    aim: i32,
+}
+
+impl PosAim {
+    fn new() -> Self {
+        PosAim { h: 0, d: 0, aim: 0 }
+    }
+}
+
+impl Add<Command> for PosAim {
+    type Output = Self;
+
+    fn add(self, rhs: Command) -> Self::Output {
+        match rhs {
+            Command::Down(amt) => PosAim {
+                aim: self.aim + amt as i32,
+                ..self
+            },
+            Command::Up(amt) => PosAim {
+                aim: self.aim - amt as i32,
+                ..self
+            },
+            Command::Forward(amt) => PosAim {
+                h: self.h + amt,
+                d: (self.d as i32 + self.aim * amt as i32) as u32,
                 ..self
             },
         }
@@ -89,7 +131,7 @@ impl FromStr for Command {
 
 #[cfg(test)]
 mod tests {
-    use super::{apply_bunch_of_commands, Command, Pos};
+    use super::{apply_bunch_of_commands, Command, Pos, PosAim};
 
     #[test]
     fn it_parses_commands() {
@@ -124,5 +166,31 @@ mod tests {
         let commands = vec![Command::Forward(5), Command::Down(10), Command::Up(7)];
         let next_pos = apply_bunch_of_commands(start_pos, &commands);
         assert_eq!(Pos { h: 5, d: 3 }, next_pos)
+    }
+
+    #[test]
+    fn it_can_run_a_bunch_of_commands_with_aim() {
+        let commands: Vec<Command> = vec![
+            "forward 5",
+            "down 5",
+            "forward 8",
+            "up 3",
+            "down 8",
+            "forward 2",
+        ]
+        .into_iter()
+        .map(|command| command.parse().unwrap())
+        .collect();
+
+        let start_pos = PosAim::new();
+        let next_pos = apply_bunch_of_commands(start_pos, &commands);
+        assert_eq!(
+            PosAim {
+                h: 15,
+                d: 60,
+                aim: 10
+            },
+            next_pos
+        );
     }
 }
