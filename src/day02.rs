@@ -4,6 +4,15 @@ use std::fmt::Display;
 use std::ops::Add;
 use std::str::FromStr;
 
+pub fn run_day_02() {
+    let filename = "data/day02.txt";
+    let commands: Vec<Command> = read_file_to_list(filename).unwrap();
+    let start_pos = Pos { h: 0, d: 0 };
+    let final_pos = apply_bunch_of_commands(start_pos, &commands);
+    println!("Final position is {:?}", final_pos);
+    println!("The checksum is {}", final_pos.h * final_pos.d);
+}
+
 fn apply_bunch_of_commands(start_pos: Pos, commands: &[Command]) -> Pos {
     commands.iter().fold(start_pos, |pos, cmd| pos + *cmd)
 }

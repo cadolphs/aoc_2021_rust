@@ -4,4 +4,5 @@ pub mod inputs;
 
 fn main() {
     day01::run_day_01();
+    day02::run_day_02();
 }
