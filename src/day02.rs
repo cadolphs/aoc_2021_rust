@@ -1,7 +1,12 @@
 use crate::inputs::read_file_to_list;
+
 use std::fmt::Display;
 use std::ops::Add;
 use std::str::FromStr;
+
+fn apply_bunch_of_commands(start_pos: Pos, commands: &[Command]) -> Pos {
+    commands.iter().fold(start_pos, |pos, cmd| pos + *cmd)
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 struct Pos {
@@ -30,7 +35,7 @@ impl Add<Command> for Pos {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Command {
     Forward(u32),
     Down(u32),
@@ -75,7 +80,7 @@ impl FromStr for Command {
 
 #[cfg(test)]
 mod tests {
-    use super::{Command, Pos};
+    use super::{apply_bunch_of_commands, Command, Pos};
 
     #[test]
     fn it_parses_commands() {
@@ -101,6 +106,14 @@ mod tests {
         let next_pos = next_pos + Command::Down(10);
         assert_eq!(Pos { h: 5, d: 10 }, next_pos);
         let next_pos = next_pos + Command::Up(7);
+        assert_eq!(Pos { h: 5, d: 3 }, next_pos)
+    }
+
+    #[test]
+    fn it_can_run_a_bunch_of_commands() {
+        let start_pos = Pos { h: 0, d: 0 };
+        let commands = vec![Command::Forward(5), Command::Down(10), Command::Up(7)];
+        let next_pos = apply_bunch_of_commands(start_pos, &commands);
         assert_eq!(Pos { h: 5, d: 3 }, next_pos)
     }
 }
