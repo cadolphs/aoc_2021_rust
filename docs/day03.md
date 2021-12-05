@@ -11,3 +11,8 @@ It's actually fine for now to leave it as a string. Then we can accumulate all t
 positions in one go, right?
 
 Trying to do a dead-simple iterator here.
+
+So for part 1 I'm doing a non-iterator accumulation. It's just more idiomatic to 
+avoid closures with too much mutability going on.
+
+For part 2, we're using the partition function of iterators. Nothing wild here.

@@ -19,6 +19,10 @@ pub fn run_day_03() {
         gamma_rate, epsilon_rate
     );
     println!("And their product is {}", gamma_rate * epsilon_rate);
+
+    let (oxygen, scrubber) = find_oxygen_and_scrubber_ratings(split_codes);
+    println!("Oxygen and scrubber rates are {} and {}", oxygen, scrubber);
+    println!("The checksum is {}", oxygen * scrubber);
 }
 
 fn find_gamma_rate(counts: &[i32], num_codes: usize) -> i32 {
@@ -68,8 +72,62 @@ fn count_ones(code_vecs: &[Vec<i32>]) -> Option<Vec<i32>> {
     Some(acc)
 }
 
+fn find_oxygen_and_scrubber_ratings(codes: Vec<Vec<i32>>) -> (i32, i32) {
+    let (ones, zeros) = partition_by_position(codes, 0);
+    let (mut oxygen, mut scrubber) = if ones.len() >= zeros.len() {
+        (ones, zeros)
+    } else {
+        (zeros, ones)
+    };
+    let mut pos = 0;
+    while oxygen.len() != 1 {
+        pos += 1;
+        oxygen = pick_most_common_partition_by_pos(oxygen, pos);
+    }
+    pos = 0;
+    while scrubber.len() != 1 {
+        pos += 1;
+        scrubber = pick_least_common_partition_by_pos(scrubber, pos);
+    }
+    (vec_to_num(&oxygen[0]), vec_to_num(&scrubber[0]))
+}
+
+fn vec_to_num(vec: &[i32]) -> i32 {
+    let mut acc = 0;
+    for val in vec {
+        acc += val;
+        acc <<= 1;
+    }
+    acc >> 1
+}
+
+fn pick_most_common_partition_by_pos(codes: Vec<Vec<i32>>, pos: usize) -> Vec<Vec<i32>> {
+    let (ones, zeros) = partition_by_position(codes, pos);
+    if ones.len() >= zeros.len() {
+        ones
+    } else {
+        zeros
+    }
+}
+
+fn pick_least_common_partition_by_pos(codes: Vec<Vec<i32>>, pos: usize) -> Vec<Vec<i32>> {
+    let (ones, zeros) = partition_by_position(codes, pos);
+    if zeros.len() <= ones.len() {
+        zeros
+    } else {
+        ones
+    }
+}
+
+fn partition_by_position(codes: Vec<Vec<i32>>, pos: usize) -> (Vec<Vec<i32>>, Vec<Vec<i32>>) {
+    codes.into_iter().partition(|vec| vec[pos] == 1)
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::day03::find_oxygen_and_scrubber_ratings;
+use crate::day03::partition_by_position;
+    use crate::day03::vec_to_num;
     use crate::day03::{count_ones, find_epsilon_rate, find_gamma_rate};
 
     use super::split_code;
@@ -97,5 +155,28 @@ mod tests {
         assert_eq!(expected, find_gamma_rate(&counts, num_codes));
         let expected_epsilon = 0b010;
         assert_eq!(expected_epsilon, find_epsilon_rate(expected, 3));
+    }
+
+    #[test]
+    fn it_partitions_nicely() {
+        let input = vec![vec![1, 0, 0], vec![0, 1, 1], vec![1, 0, 1]];
+        let (ones, zeros) = partition_by_position(input, 0);
+        let expected = (vec![vec![1, 0, 0], vec![1, 0, 1]], vec![vec![0, 1, 1]]);
+        assert_eq!(expected, (ones, zeros));
+    }
+
+    #[test]
+    fn it_converts_to_binary() {
+        assert_eq!(1 + 4 + 8 + 32, vec_to_num(&vec![1, 0, 1, 1, 0, 1]))
+    }
+
+    #[test]
+    fn it_runs_the_example_test() {
+        let input = "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010";
+        let split_codes: Vec<Vec<i32>> = input.lines()
+        .map(|code| split_code(&code).unwrap())
+        .collect();
+        let (oxygen, scrubber) = find_oxygen_and_scrubber_ratings(split_codes);
+        assert_eq!((23, 10), (oxygen, scrubber));
     }
 }
