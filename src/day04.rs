@@ -7,7 +7,9 @@ pub fn run_day_04() {
     println!("Well. Nothing here yet.");
 }
 
+pub struct Board {}
 
 #[cfg(test)]
 mod tests {
+    
 }
