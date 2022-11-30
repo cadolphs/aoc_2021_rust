@@ -10,3 +10,5 @@ marked-array that it has been marked. We can then also efficiently figure out if
 Or, even easier, if we _assume_ correct boards, all we need to do is keep track of _how many entries_ we've had in a given column. Hah. Oh wait. For the check-sum 
 computation we need to know which numbers are marked / unmarked. So there. Betterr to _honestly_ represent the state of the game, not optimize prematurely until we 
 also know part b) of the challenge.
+
+So. Let's write some _logic_. For that, I'll want a simple initial test. What's the simplest happy path? I create a board, mark a number. Then get a list of all marked numbers.
